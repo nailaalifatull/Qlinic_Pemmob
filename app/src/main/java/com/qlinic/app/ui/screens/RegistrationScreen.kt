@@ -68,6 +68,7 @@ import com.qlinic.app.ui.theme.PinkPrimary
 import com.qlinic.app.ui.theme.TextPrimary
 import com.qlinic.app.ui.theme.TextSecondary
 import com.qlinic.app.ui.theme.White
+import com.qlinic.app.ui.theme.YellowAccent
 import com.qlinic.app.viewmodel.QueueViewModel
 
 @Composable
