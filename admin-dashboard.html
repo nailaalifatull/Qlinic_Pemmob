@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Qlinic - Portal Petugas / Dokter</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --blue-primary: #1E60AA;
       --blue-dark: #0F3767;
       --blue-light: #EBF3FC;
+      --pink-primary: #E91E8C;
+      --pink-light: #FCE4F3;
       --green: #10B981;
       --red: #EF4444;
       --yellow: #F59E0B;
@@ -85,83 +89,132 @@
 
     main {
       flex: 1;
-      max-width: 1000px;
+      max-width: 1100px;
       margin: 2rem auto;
       padding: 0 1rem;
       width: 100%;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    /* ── 2-card grid ── */
+    .clinics-grid {
+      display: flex;
       gap: 1.5rem;
     }
 
     @media (max-width: 768px) {
-      .grid {
-        grid-template-columns: 1fr;
+      .clinics-grid {
+        flex-direction: column;
       }
     }
 
-    .card {
+    .clinic-card {
+      flex: 1;
       background: var(--card-bg);
-      border-radius: 16px;
-      padding: 1.75rem;
+      border-radius: 20px;
+      overflow: hidden;
       border: 1px solid #E2E8F0;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     }
 
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--blue-dark);
-      margin-bottom: 1.25rem;
+    /* ── Card header band ── */
+    .clinic-card__header {
+      padding: 1.25rem 1.5rem;
+      color: white;
+    }
+
+    .clinic-card--umum .clinic-card__header {
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-primary));
+    }
+
+    .clinic-card--gigi .clinic-card__header {
+      background: linear-gradient(135deg, #7b1fa2, var(--pink-primary));
+    }
+
+    .clinic-card__header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .ticket-display {
-      background: linear-gradient(135deg, var(--blue-light), #F1F5F9);
-      border: 2px dashed #CBD5E1;
-      border-radius: 16px;
-      padding: 1.5rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
+    .clinic-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
     }
 
-    .ticket-number {
-      font-size: 3.5rem;
+    .clinic-card__name {
+      font-size: 1.25rem;
       font-weight: 800;
-      color: var(--blue-primary);
-      letter-spacing: 2px;
+      margin-top: 0.5rem;
+    }
+
+    .clinic-card__meta {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Card body ── */
+    .clinic-card__body {
+      padding: 1.5rem;
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid #E2E8F0;
+      margin: 1rem 0;
+    }
+
+    .queue-label {
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .queue-number {
+      text-align: center;
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      line-height: 1;
       margin: 0.5rem 0;
     }
 
-    .ticket-state {
-      display: inline-block;
-      font-weight: 700;
-      font-size: 0.9rem;
-      padding: 0.35rem 1rem;
-      border-radius: 9999px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    .clinic-card--umum .queue-number {
+      color: var(--blue-primary);
     }
 
-    .state-waiting { background: #E0F2FE; color: #0284C7; }
-    .state-called { background: #DCFCE7; color: #16A34A; animation: pulse 1.5s infinite; }
-    .state-missed { background: #FEE2E2; color: #DC2626; }
-    .state-completed { background: #F3F4F6; color: #4B5563; }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+    .clinic-card--gigi .queue-number {
+      color: var(--pink-primary);
     }
 
-    .action-btn-group {
+    .queue-number-bg {
+      border-radius: 14px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .clinic-card--umum .queue-number-bg {
+      background: var(--blue-light);
+    }
+
+    .clinic-card--gigi .queue-number-bg {
+      background: var(--pink-light);
+    }
+
+    /* ── Buttons ── */
+    .btn-group {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.65rem;
     }
 
     .btn {
@@ -170,17 +223,22 @@
       justify-content: center;
       gap: 0.5rem;
       border: none;
-      padding: 0.9rem 1.25rem;
-      font-size: 0.95rem;
+      padding: 0.85rem 1.25rem;
+      font-size: 0.9rem;
       font-weight: 700;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
+      width: 100%;
     }
 
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn:active {
+      transform: translateY(0);
     }
 
     .btn-call {
@@ -188,43 +246,31 @@
       color: white;
     }
 
-    .btn-miss {
-      background: var(--red);
-      color: white;
-    }
-
-    .btn-wait {
+    .btn-next-umum {
       background: var(--blue-primary);
       color: white;
     }
 
-    .btn-reset {
-      background: #F1F5F9;
-      color: var(--text-muted);
-      border: 1px solid #CBD5E1;
+    .btn-next-gigi {
+      background: var(--pink-primary);
+      color: white;
     }
 
-    .detail-row {
+    /* ── Info row beneath number ── */
+    .info-row {
       display: flex;
       justify-content: space-between;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid #F1F5F9;
-      font-size: 0.9rem;
-    }
-
-    .detail-row:last-child {
-      border-bottom: none;
-    }
-
-    .detail-label {
+      font-size: 0.8rem;
       color: var(--text-muted);
+      margin-top: 0.6rem;
     }
 
-    .detail-val {
-      font-weight: 600;
+    .info-row span b {
+      color: var(--text);
     }
   </style>
 </head>
+
 <body>
 
   <header>
@@ -242,79 +288,87 @@
   </header>
 
   <main>
-    <div class="grid">
-      <!-- Live Ticket Display & Controls -->
-      <div class="card">
-        <div class="card-title">
-          <span>Antrean Pasien Aktif</span>
-          <span id="badgeState" class="ticket-state state-waiting">WAITING</span>
+    <div class="clinics-grid">
+
+      <!-- ═══════════════ CARD POLI UMUM ═══════════════ -->
+      <div class="clinic-card clinic-card--umum">
+        <div class="clinic-card__header">
+          <div class="clinic-card__header-row">
+            <span>Poli Umum</span>
+            <span class="clinic-badge" id="umum-status-badge">Kode: U</span>
+          </div>
+          <div class="clinic-card__name" id="umum-doctor">Memuat dokter...</div>
+          <div class="clinic-card__meta" id="umum-room">Memuat ruangan...</div>
         </div>
 
-        <div class="ticket-display">
-          <p style="font-size: 0.85rem; color: var(--text-muted);">NOMOR ANTREAN SAAT INI</p>
-          <div id="ticketNumber" class="ticket-number">U-040</div>
-          <p id="ticketClinic" style="font-weight: 600; color: var(--text);">Poli Umum - Ruang Periksa 1</p>
-          <p id="ticketDoctor" style="font-size: 0.85rem; color: var(--text-muted);">dr. Andini Kusumawardani</p>
-        </div>
+        <div class="clinic-card__body">
+          <hr class="divider">
 
-        <div class="action-btn-group">
-          <button class="btn btn-call" onclick="setStatus('CALLED')">
-            📢 Panggil Pasien (CALLED)
-          </button>
-          <button class="btn btn-miss" onclick="setStatus('MISSED')">
-            ⚠️ Pasien Terlewat (MISSED)
-          </button>
-          <button class="btn btn-wait" onclick="setStatus('WAITING')">
-            ⏳ Kembalikan Menunggu (WAITING)
-          </button>
-          <button class="btn btn-reset" onclick="resetQueue()">
-            🔄 Reset ke Antrean U-040
-          </button>
+          <div class="queue-number-bg">
+            <div class="queue-label">NOMOR ANTREAN SAAT INI</div>
+            <div class="queue-number" id="umum-current">U-…</div>
+            <div class="info-row">
+              <span>Berikutnya: <b id="umum-next">—</b></span>
+              <span>Total: <b id="umum-total">—</b></span>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="btn-group">
+            <button class="btn btn-call" onclick="callPatient('poli_umum')">
+              Panggil Pasien Ini
+            </button>
+            <button class="btn btn-next-umum" onclick="callNext('poli_umum')">
+              Panggil Antrean Selanjutnya
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Live Info Details -->
-      <div class="card">
-        <div class="card-title">
-          <span>Detail Pasien & Status</span>
+      <!-- ═══════════════ CARD POLI GIGI ═══════════════ -->
+      <div class="clinic-card clinic-card--gigi">
+        <div class="clinic-card__header">
+          <div class="clinic-card__header-row">
+            <span>Poli Gigi</span>
+            <span class="clinic-badge" id="gigi-status-badge">Kode: G</span>
+          </div>
+          <div class="clinic-card__name" id="gigi-doctor">Memuat dokter...</div>
+          <div class="clinic-card__meta" id="gigi-room">Memuat ruangan...</div>
         </div>
 
-        <div class="detail-row">
-          <span class="detail-label">Nama Pasien</span>
-          <span class="detail-val">Iqbal Ramadhan</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Status Panggilan</span>
-          <span class="detail-val" id="detailStatus">Menunggu Giliran</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Sedang Dilayani</span>
-          <span class="detail-val" id="detailServing">U-038</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Nomor Berikutnya</span>
-          <span class="detail-val" id="detailNext">U-039</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Status Re-Queue</span>
-          <span class="detail-val" id="detailReQueue">Belum Digunakan</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Terhubung ke Database</span>
-          <span class="detail-val" style="color: var(--blue-primary); font-size: 0.8rem;">algifariprojects (Singapore)</span>
-        </div>
+        <div class="clinic-card__body">
+          <hr class="divider">
 
-        <div style="margin-top: 1.5rem; background: var(--blue-light); border-radius: 12px; padding: 1rem; font-size: 0.85rem; color: var(--blue-dark); line-height: 1.5;">
-          💡 <strong>Tips Presentasi:</strong> Buka halaman ini di browser laptop Anda, dan buka aplikasi Android di emulator atau HP Anda. Klik tombol <strong>Panggil Pasien</strong>, maka layar aplikasi Android akan langsung berpindah ke <strong>CalledScreen</strong> secara real-time!
+          <div class="queue-number-bg">
+            <div class="queue-label">NOMOR ANTREAN SAAT INI</div>
+            <div class="queue-number" id="gigi-current">G-…</div>
+            <div class="info-row">
+              <span>Berikutnya: <b id="gigi-next">—</b></span>
+              <span>Total: <b id="gigi-total">—</b></span>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="btn-group">
+            <button class="btn btn-call" onclick="callPatient('poli_gigi')">
+              Panggil Pasien Ini
+            </button>
+            <button class="btn btn-next-gigi" onclick="callNext('poli_gigi')">
+              Panggil Antrean Selanjutnya
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+    </div><!-- /clinics-grid -->
   </main>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       databaseURL: "https://algifariprojects-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -323,48 +377,93 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const ticketRef = ref(db, "current_queue/activeTicket");
 
-    // Realtime listener
-    onValue(ticketRef, (snapshot) => {
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+
+    function incrementQueue(current) {
+      const match = current.match(/^([A-Z]+)-(\d+)$/);
+      if (!match) return current;
+      const prefix = match[1];
+      const num = parseInt(match[2], 10) + 1;
+      return `${prefix}-${String(num).padStart(3, '0')}`;
+    }
+
+    // ── Live listeners for each clinic ───────────────────────────────────────
+
+    function bindClinic(clinicId) {
+      const prefix = clinicId === 'poli_umum' ? 'umum' : 'gigi';
+      const clinicRef = ref(db, `clinics/${clinicId}`);
+
+      onValue(clinicRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Header
+        const doctorName = (data.doctor && data.doctor.name) ? data.doctor.name : '—';
+        document.getElementById(`${prefix}-doctor`).textContent = doctorName;
+        document.getElementById(`${prefix}-room`).textContent = `${data.room || '—'} • ${data.schedule || ''}`;
+        document.getElementById(`${prefix}-status-badge`).textContent = `Kode: ${data.queueCode || '—'}`;
+
+        // Numbers
+        document.getElementById(`${prefix}-current`).textContent = data.currentServing || '—';
+        document.getElementById(`${prefix}-next`).textContent = data.nextNumber || '—';
+        document.getElementById(`${prefix}-total`).textContent = data.totalQueue != null ? data.totalQueue : '—';
+      });
+    }
+
+    bindClinic('poli_umum');
+    bindClinic('poli_gigi');
+
+    // ── Button actions ────────────────────────────────────────────────────────
+
+    /**
+     * "Panggil Pasien Ini": set status tiket aktif jadi CALLED.
+     * Path disesuaikan dengan clinicId agar masing-masing poli punya tiket sendiri.
+     * Saat ini semua poli memakai satu node activeTicket.
+     */
+    window.callPatient = (clinicId) => {
+      const ticketRef = ref(db, 'current_queue/activeTicket');
+      update(ticketRef, { status: 'CALLED' });
+    };
+
+    /**
+     * "Panggil Selanjutnya": naikkan currentServing ke nomor berikutnya,
+     * geser nextNumber satu langkah lagi, update Firebase.
+     */
+    window.callNext = async (clinicId) => {
+      const clinicRef = ref(db, `clinics/${clinicId}`);
+      const snapshot = await get(clinicRef);
       const data = snapshot.val();
       if (!data) return;
 
-      document.getElementById("ticketNumber").textContent = data.ticketNumber || "U-040";
-      document.getElementById("ticketClinic").textContent = `${data.clinicName || 'Poli Umum'} - ${data.room || 'Ruang 01'}`;
-      if (data.doctorInfo && data.doctorInfo.name) {
-        document.getElementById("ticketDoctor").textContent = data.doctorInfo.name;
+      const current = data.currentServing || '';
+      const total = data.totalQueue || 0;
+
+      // Ekstrak prefix (U/G) dan angka dari currentServing, mis. "U-049" -> "U", 49
+      const match = current.match(/^([A-Z]+)-(\d+)$/);
+      if (!match) return;
+      const prefix = match[1];
+      const currentNum = parseInt(match[2], 10);
+
+      // ── Batas atas: stop kalau sudah mencapai totalQueue ──
+      if (currentNum >= total) {
+        alert(`Antrean ${prefix} sudah mencapai nomor terakhir (${current}).`);
+        return;
       }
 
-      const status = data.status || "WAITING";
-      const badge = document.getElementById("badgeState");
-      badge.textContent = status;
-      badge.className = `ticket-state state-${status.toLowerCase()}`;
+      const newNum = currentNum + 1;
+      const newCurrent = `${prefix}-${String(newNum).padStart(3, '0')}`;
+      const newNext = newNum + 1 <= total
+        ? `${prefix}-${String(newNum + 1).padStart(3, '0')}`
+        : '—';
 
-      document.getElementById("detailStatus").textContent = status;
-      document.getElementById("detailServing").textContent = data.currentServing || "U-038";
-      document.getElementById("detailNext").textContent = data.nextNumber || "U-039";
-      document.getElementById("detailReQueue").textContent = data.reQueueUsed ? "Sudah Digunakan" : "Belum Digunakan";
-    });
-
-    window.setStatus = (newStatus) => {
-      update(ticketRef, { status: newStatus });
-    };
-
-    window.resetQueue = () => {
-      update(ticketRef, {
-        ticketNumber: "U-040",
-        clinicName: "Poli Umum",
-        doctorName: "dr. Andini",
-        room: "Ruang Periksa 1",
-        status: "WAITING",
-        peopleAhead: 2,
-        estimatedWaitMin: 15,
-        currentServing: "U-038",
-        nextNumber: "U-039",
-        reQueueUsed: false
+      await update(ref(db, `clinics/${clinicId}`), {
+        currentServing: newCurrent,
+        nextNumber: newNext
       });
     };
   </script>
 </body>
+
 </html>
