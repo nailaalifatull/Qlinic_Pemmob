@@ -25,6 +25,7 @@ data class ClinicItem(
 data class Patient(
     val name: String = "Astria Rahmawati",
     val nik: String = "3201**********",
+    val phone: String = "0812-3456-7890",
     val bpjsVerified: Boolean = true
 )
 
@@ -46,8 +47,8 @@ data class QueueTicket(
     val estimatedWaitMin: Int = 15,
     val registrationTime: String = "09:45 WIB",
     val callTime: String = "09:42 WIB",
-    val practiceSchedule: String = "Senin, 24 Mei 2025\nSesi Pagi (09:00 - 12:00)",
-    val facility: String = "Klinik Pratama Qlinic\nLantai 1 - Sayap Barat",
+    val practiceSchedule: String = "Senin, 24 Mei 2025",
+    val facility: String = "Klinik Pratama Qlinic",
     val ticketCode: String = "QLN-U040-6524",
     val currentServing: String = "U-038",
     val nextNumber: String = "U-039",

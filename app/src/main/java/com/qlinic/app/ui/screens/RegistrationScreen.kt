@@ -400,7 +400,7 @@ fun ConfirmationCard(
 
             // Detail rows
             ConfirmDetailRow("Nama Pasien", patient.name)
-            ConfirmDetailRow("Nomor Identitas (NIK)", patient.nik)
+            ConfirmDetailRow("Nomor HP", patient.phone)
             ConfirmDetailRow("Poli Tujuan", clinic.name, valueColor = BluePrimary)
             ConfirmDetailRow("Dokter Praktik", "${clinic.doctor.name.split(" ").take(2).joinToString(" ")} (Umum)")
             ConfirmDetailRow("Tanggal Kunjungan", "Hari Ini (Senin, 24 Mei)")

@@ -121,13 +121,6 @@ fun MonitoringScreen(
                             Spacer(Modifier.width(4.dp))
                             Text("Antrean", color = TextSecondary, fontSize = 13.sp)
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Notifications, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(22.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(BlueLight), contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.Person, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(20.dp))
-                            }
-                        }
                     }
                 }
             }
