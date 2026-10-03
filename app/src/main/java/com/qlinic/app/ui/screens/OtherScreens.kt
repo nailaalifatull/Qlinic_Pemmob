@@ -68,7 +68,11 @@ import com.qlinic.app.viewmodel.QueueViewModel
 // ========== HOME SCREEN ==========
 
 @Composable
-fun HomeScreen(viewModel: QueueViewModel, onNavigateToQueue: () -> Unit) {
+fun HomeScreen(
+    viewModel: QueueViewModel,
+    onNavigateToQueue: () -> Unit,
+    onNavigateToHistory: () -> Unit
+) {
     val name by viewModel.profileName.collectAsState()
     val initials = name.trim().split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
 
@@ -146,7 +150,7 @@ fun HomeScreen(viewModel: QueueViewModel, onNavigateToQueue: () -> Unit) {
                     label = "Riwayat\nKunjungan",
                     color = PinkPrimary,
                     modifier = Modifier.weight(1f),
-                    onClick = {}
+                    onClick = onNavigateToHistory
                 )
             }
         }

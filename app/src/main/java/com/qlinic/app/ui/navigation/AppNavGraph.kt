@@ -96,6 +96,13 @@ fun QlinicNavHost() {
                             launchSingleTop = true
                             restoreState = true
                         }
+                    },
+                    onNavigateToHistory = {
+                        navController.navigate(BottomNavRoute.History.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 )
             }
