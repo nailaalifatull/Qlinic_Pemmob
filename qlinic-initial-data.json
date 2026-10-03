@@ -1,0 +1,84 @@
+{
+  "clinics": {
+    "poli_umum": {
+      "id": "poli_umum",
+      "name": "Poli Umum",
+      "icon": "general",
+      "queueCode": "U",
+      "isOpen": true,
+      "room": "Ruang 01",
+      "schedule": "Senin-Jumat • 08.00-14.00 WIB",
+      "doctor": {
+        "name": "dr. Andini Kusumawardani",
+        "specialization": "Spesialis Kedokteran Keluarga",
+        "photoUrl": "",
+        "status": "Siap menerima pasien"
+      },
+      "currentServing": "U-038",
+      "nextNumber": "U-039",
+      "totalQueue": 39,
+      "estimatedWaitMin": 15
+    },
+    "poli_gigi": {
+      "id": "poli_gigi",
+      "name": "Poli Gigi",
+      "icon": "dental",
+      "queueCode": "G",
+      "isOpen": true,
+      "room": "Ruang 02",
+      "schedule": "Senin-Jumat • 08.00-14.00 WIB",
+      "doctor": {
+        "name": "drg. Raka Pradipta",
+        "specialization": "Dokter Gigi",
+        "photoUrl": "",
+        "status": "Siap menerima pasien"
+      },
+      "currentServing": "G-021",
+      "nextNumber": "G-022",
+      "totalQueue": 22,
+      "estimatedWaitMin": 30
+    }
+  },
+  "current_queue": {
+    "activeTicket": {
+      "ticketNumber": "U-040",
+      "clinicName": "Poli Umum",
+      "doctorName": "dr. Andini",
+      "doctorInfo": {
+        "name": "dr. Andini Kusumawardani",
+        "specialization": "Spesialis Kedokteran Keluarga",
+        "photoUrl": "",
+        "status": "Siap menerima pasien"
+      },
+      "room": "Ruang Periksa 1",
+      "status": "WAITING",
+      "peopleAhead": 2,
+      "estimatedWaitMin": 15,
+      "registrationTime": "09:45 WIB",
+      "callTime": "09:42 WIB",
+      "practiceSchedule": "Senin, 24 Mei 2025\nSesi Pagi (09:00 - 12:00)",
+      "facility": "Klinik Pratama Qlinic\nLantai 1 - Sayap Barat",
+      "ticketCode": "QLN-U040-6524",
+      "currentServing": "U-038",
+      "nextNumber": "U-039",
+      "reQueueUsed": false,
+      "missedCount": 0
+    }
+  },
+  "history": {
+    "entry_1": {
+      "ticketNumber": "U-027",
+      "clinicName": "Poli Umum",
+      "doctorName": "dr. Andini Kusumawardani",
+      "date": "Senin, 20 Oktober 2025",
+      "status": "Selesai"
+    },
+    "entry_2": {
+      "ticketNumber": "G-014",
+      "clinicName": "Poli Gigi",
+      "doctorName": "drg. Raka Pradipta",
+      "date": "Rabu, 8 Oktober 2025",
+      "status": "Selesai"
+    }
+  }
+}
