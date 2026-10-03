@@ -74,7 +74,8 @@ import com.qlinic.app.viewmodel.QueueViewModel
 @Composable
 fun RegistrationScreen(
     viewModel: QueueViewModel,
-    onConfirmed: () -> Unit
+    onConfirmed: () -> Unit,
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val selectedId by viewModel.selectedClinicId.collectAsState()
     var showConfirmation by remember { mutableStateOf(false) }
@@ -123,7 +124,8 @@ fun RegistrationScreen(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(White.copy(alpha = 0.2f)),
+                                    .background(White.copy(alpha = 0.2f))
+                                    .clickable { onNavigateToProfile() },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = White, modifier = Modifier.size(20.dp))

@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalHospital
@@ -53,7 +52,6 @@ import com.qlinic.app.ui.theme.BackgroundGray
 import com.qlinic.app.ui.theme.BlueDark
 import com.qlinic.app.ui.theme.BlueLight
 import com.qlinic.app.ui.theme.BluePrimary
-import com.qlinic.app.ui.theme.BorderMedium
 import com.qlinic.app.ui.theme.GreenLight
 import com.qlinic.app.ui.theme.GreenSuccess
 import com.qlinic.app.ui.theme.PinkPrimary
@@ -71,7 +69,8 @@ import com.qlinic.app.viewmodel.QueueViewModel
 fun HomeScreen(
     viewModel: QueueViewModel,
     onNavigateToQueue: () -> Unit,
-    onNavigateToHistory: () -> Unit
+    onNavigateToHistory: () -> Unit,
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val name by viewModel.profileName.collectAsState()
     val initials = name.trim().split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
@@ -108,7 +107,7 @@ fun HomeScreen(
                         }
                         Spacer(Modifier.weight(1f))
                         Box(
-                            modifier = Modifier.size(38.dp).clip(CircleShape).background(White.copy(0.2f)),
+                            modifier = Modifier.size(38.dp).clip(CircleShape).background(White.copy(0.2f)).clickable { onNavigateToProfile() },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(initials, color = White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
@@ -289,8 +288,6 @@ fun PoliCard(name: String, doctor: String, icon: ImageVector) {
                 Spacer(Modifier.width(4.dp))
                 Text("Buka", color = GreenSuccess, fontSize = 11.sp, fontWeight = FontWeight.Medium)
             }
-            Spacer(Modifier.width(8.dp))
-            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = BorderMedium, modifier = Modifier.size(18.dp))
         }
     }
 }

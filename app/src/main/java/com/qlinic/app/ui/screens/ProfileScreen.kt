@@ -18,16 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AlternateEmail
-import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -112,19 +108,6 @@ fun ProfileScreen(viewModel: QueueViewModel) {
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(name, color = White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                Text(viewModel.patient.nik, color = White.copy(0.7f), fontSize = 13.sp)
-                Spacer(Modifier.height(10.dp))
-                // BPJS badge
-                Row(
-                    modifier = Modifier
-                        .background(White.copy(0.2f), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = GreenSuccess, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Pasien BPJS Terverifikasi", color = White, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                }
             }
         }
 
@@ -187,11 +170,9 @@ fun ProfileScreen(viewModel: QueueViewModel) {
                 if (!isEditing) {
                     // View mode
                     ProfileInfoRow(Icons.Default.Person, "Nama Lengkap", name)
-                    ProfileInfoRow(Icons.Default.Badge, "NIK", viewModel.patient.nik)
                     ProfileInfoRow(Icons.Default.Phone, "No. Telepon", phone)
                     ProfileInfoRow(Icons.Default.AlternateEmail, "Email", email)
-                    ProfileInfoRow(Icons.Default.Home, "Alamat", address)
-                    ProfileInfoRow(Icons.Default.Shield, "Status BPJS", "Aktif / Terverifikasi", valueColor = GreenSuccess)
+                    ProfileInfoRow(Icons.Default.LocationOn, "Alamat", address)
                 } else {
                     // Edit mode
                     ProfileEditField(label = "Nama Lengkap", value = editName, icon = Icons.Default.Person, onValueChange = { editName = it })
@@ -200,7 +181,7 @@ fun ProfileScreen(viewModel: QueueViewModel) {
                     Spacer(Modifier.height(12.dp))
                     ProfileEditField(label = "Email", value = editEmail, icon = Icons.Default.AlternateEmail, onValueChange = { editEmail = it })
                     Spacer(Modifier.height(12.dp))
-                    ProfileEditField(label = "Alamat", value = editAddress, icon = Icons.Default.Home, onValueChange = { editAddress = it })
+                    ProfileEditField(label = "Alamat", value = editAddress, icon = Icons.Default.LocationOn, onValueChange = { editAddress = it })
                     Spacer(Modifier.height(20.dp))
 
                     // Save button
@@ -218,28 +199,6 @@ fun ProfileScreen(viewModel: QueueViewModel) {
                         Text("Simpan Perubahan", fontWeight = FontWeight.Bold)
                     }
                 }
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // ---- Keanggotaan / Status card ----
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = White),
-            elevation = CardDefaults.cardElevation(2.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text("Fasilitas & Layanan", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                Spacer(Modifier.height(14.dp))
-                HorizontalDivider(color = BackgroundGray)
-                Spacer(Modifier.height(14.dp))
-                ProfileInfoRow(Icons.Default.LocalHospital, "Klinik Terdaftar", "Klinik Pratama Qlinic")
-                ProfileInfoRow(Icons.Default.Shield, "Jenis Asuransi", "BPJS Kesehatan")
-                ProfileInfoRow(Icons.Default.VerifiedUser, "Status Keanggotaan", "Aktif", valueColor = GreenSuccess)
             }
         }
 

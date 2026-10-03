@@ -57,7 +57,7 @@ object QueueRepository {
                 photoUrl = "",
                 status = "Siap menerima pasien"
             ),
-            schedule = "Senin, Rabu, Jumat • 09.00-15.00 WIB",
+            schedule = "Senin-Jumat • 08.00-14.00 WIB",
             currentServing = "G-021",
             nextNumber = "G-022",
             totalQueue = 22,

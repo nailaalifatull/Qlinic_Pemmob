@@ -103,6 +103,13 @@ fun QlinicNavHost() {
                             launchSingleTop = true
                             restoreState = true
                         }
+                    },
+                    onNavigateToProfile = {
+                        navController.navigate(BottomNavRoute.Profile.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 )
             }
@@ -111,7 +118,14 @@ fun QlinicNavHost() {
                 when (queueRoute) {
                     "registration" -> RegistrationScreen(
                         viewModel = viewModel,
-                        onConfirmed = { queueRoute = "monitoring" }
+                        onConfirmed = { queueRoute = "monitoring" },
+                        onNavigateToProfile = {
+                            navController.navigate(BottomNavRoute.Profile.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     )
                     "monitoring" -> MonitoringScreen(
                         viewModel = viewModel,
