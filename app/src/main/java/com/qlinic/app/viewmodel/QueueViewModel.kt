@@ -3,7 +3,6 @@ package com.qlinic.app.viewmodel
 import androidx.lifecycle.ViewModel
 import com.qlinic.app.data.model.ClinicItem
 import com.qlinic.app.data.model.Patient
-import com.qlinic.app.data.model.QueueStatus
 import com.qlinic.app.data.model.QueueTicket
 import com.qlinic.app.data.repository.QueueRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,21 +62,5 @@ class QueueViewModel : ViewModel() {
         _registrationConfirmed.value = false
         _selectedClinicId.value = null
         QueueRepository.resetTicket()
-    }
-
-    /**
-     * Simulator: force a specific queue state for testing
-     */
-    fun setSimulatedState(status: QueueStatus) {
-        QueueRepository.setStatus(status)
-    }
-
-    /**
-     * Re-Queue: one-time activation after MISSED state
-     */
-    fun activateReQueue() {
-        if (!ticket.value.reQueueUsed) {
-            QueueRepository.activateReQueue()
-        }
     }
 }

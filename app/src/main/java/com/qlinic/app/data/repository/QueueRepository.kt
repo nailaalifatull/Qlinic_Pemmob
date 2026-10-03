@@ -143,14 +143,6 @@ object QueueRepository {
         }
     }
 
-    fun setStatus(status: QueueStatus) {
-        _ticket.value = _ticket.value.copy(status = status)
-        try {
-            database.getReference("current_queue/activeTicket/status").setValue(status.name)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to update status in Firebase", e)
-        }
-    }
 
     fun resetTicket() {
         _ticket.value = defaultTicket
@@ -158,22 +150,6 @@ object QueueRepository {
             database.getReference("current_queue/activeTicket").setValue(defaultTicket)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to reset ticket in Firebase", e)
-        }
-    }
-
-    fun activateReQueue() {
-        _ticket.value = _ticket.value.copy(
-            status = QueueStatus.WAITING,
-            reQueueUsed = true
-        )
-        try {
-            val updates = mapOf<String, Any>(
-                "status" to QueueStatus.WAITING.name,
-                "reQueueUsed" to true
-            )
-            database.getReference("current_queue/activeTicket").updateChildren(updates)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to update reQueue in Firebase", e)
         }
     }
 

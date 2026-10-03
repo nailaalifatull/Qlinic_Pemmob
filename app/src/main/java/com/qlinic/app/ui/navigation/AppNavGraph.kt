@@ -26,10 +26,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.qlinic.app.ui.screens.CalledScreen
 import com.qlinic.app.ui.screens.HistoryScreen
 import com.qlinic.app.ui.screens.HomeScreen
-import com.qlinic.app.ui.screens.MissedScreen
 import com.qlinic.app.ui.screens.MonitoringScreen
 import com.qlinic.app.ui.screens.ProfileScreen
 import com.qlinic.app.ui.screens.RegistrationScreen
@@ -114,7 +112,7 @@ fun QlinicNavHost() {
                 )
             }
             composable(BottomNavRoute.Queue.route) {
-                // Queue sub-flow state machine
+                // Queue sub-flow: registration -> ticket detail
                 when (queueRoute) {
                     "registration" -> RegistrationScreen(
                         viewModel = viewModel,
@@ -129,17 +127,7 @@ fun QlinicNavHost() {
                     )
                     "monitoring" -> MonitoringScreen(
                         viewModel = viewModel,
-                        onNavigateToCalled = { queueRoute = "called" },
-                        onNavigateToMissed = { queueRoute = "missed" },
                         onCancelled = { queueRoute = "registration" }
-                    )
-                    "called" -> CalledScreen(
-                        viewModel = viewModel,
-                        onCheckIn = { queueRoute = "monitoring" }
-                    )
-                    "missed" -> MissedScreen(
-                        viewModel = viewModel,
-                        onReQueueActivated = { queueRoute = "monitoring" }
                     )
                 }
             }
