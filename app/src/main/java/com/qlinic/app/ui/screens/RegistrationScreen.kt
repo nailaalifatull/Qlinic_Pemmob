@@ -25,8 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
@@ -37,7 +35,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -71,7 +68,6 @@ import com.qlinic.app.ui.theme.PinkPrimary
 import com.qlinic.app.ui.theme.TextPrimary
 import com.qlinic.app.ui.theme.TextSecondary
 import com.qlinic.app.ui.theme.White
-import com.qlinic.app.ui.theme.YellowAccent
 import com.qlinic.app.viewmodel.QueueViewModel
 
 @Composable
@@ -122,19 +118,14 @@ fun RegistrationScreen(
                                 Spacer(Modifier.width(8.dp))
                                 Text("Qlinic", color = White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             }
-                            Row {
-                                IconButton(onClick = {}) {
-                                    Icon(Icons.Default.Help, contentDescription = null, tint = White.copy(alpha = 0.8f))
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(White.copy(alpha = 0.2f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Person, contentDescription = null, tint = White, modifier = Modifier.size(20.dp))
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(White.copy(alpha = 0.2f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null, tint = White, modifier = Modifier.size(20.dp))
                             }
                         }
                         Spacer(Modifier.height(16.dp))
@@ -156,17 +147,7 @@ fun RegistrationScreen(
                             color = White.copy(alpha = 0.85f),
                             fontSize = 13.sp
                         )
-                        Spacer(Modifier.height(8.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .background(White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = YellowAccent, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("Dokter ditetapkan otomatis sesuai jadwal praktik", color = White, fontSize = 11.sp)
-                        }
+
                     }
                 }
             }

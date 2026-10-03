@@ -225,30 +225,7 @@ fun HomeScreen(
             Spacer(Modifier.height(8.dp))
         }
 
-        // ---- Pengumuman ----
-        item {
-            Spacer(Modifier.height(12.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = YellowLight),
-                elevation = CardDefaults.cardElevation(0.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = YellowAccent, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text("Pengumuman", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextPrimary)
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            "Mulai November 2025, pendaftaran antrean dapat dilakukan online melalui aplikasi Qlinic.",
-                            fontSize = 12.sp,
-                            color = TextSecondary
-                        )
-                    }
-                }
-            }
-        }
+
     }
 }
 
