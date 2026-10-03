@@ -3,3 +3,6 @@
 /app/build/
 /build/
 *.hprof
+/.idea/
+local.properties
+.DS_Store

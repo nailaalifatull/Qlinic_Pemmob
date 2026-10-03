@@ -82,11 +82,23 @@ fun QlinicNavHost() {
         }
     ) { innerPadding ->
         NavHost(
-            navController = navController, 
+            navController = navController,
             startDestination = BottomNavRoute.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(BottomNavRoute.Home.route) { HomeScreen() }
+            composable(BottomNavRoute.Home.route) {
+                HomeScreen(
+                    viewModel = viewModel,
+                    onNavigateToQueue = {
+                        queueRoute = "registration"
+                        navController.navigate(BottomNavRoute.Queue.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
             composable(BottomNavRoute.Queue.route) {
                 // Queue sub-flow state machine
                 when (queueRoute) {
@@ -97,7 +109,8 @@ fun QlinicNavHost() {
                     "monitoring" -> MonitoringScreen(
                         viewModel = viewModel,
                         onNavigateToCalled = { queueRoute = "called" },
-                        onNavigateToMissed = { queueRoute = "missed" }
+                        onNavigateToMissed = { queueRoute = "missed" },
+                        onCancelled = { queueRoute = "registration" }
                     )
                     "called" -> CalledScreen(
                         viewModel = viewModel,
@@ -110,7 +123,7 @@ fun QlinicNavHost() {
                 }
             }
             composable(BottomNavRoute.History.route) { HistoryScreen() }
-            composable(BottomNavRoute.Profile.route) { ProfileScreen() }
+            composable(BottomNavRoute.Profile.route) { ProfileScreen(viewModel = viewModel) }
         }
     }
 }

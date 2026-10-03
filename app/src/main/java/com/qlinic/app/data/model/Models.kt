@@ -18,7 +18,8 @@ data class ClinicItem(
     val currentServing: String = "",      // e.g. "U-038"
     val nextNumber: String = "",          // e.g. "U-039"
     val totalQueue: Int = 0,
-    val room: String = "Ruang 01"
+    val room: String = "Ruang 01",
+    val estimatedWaitMin: Int = 10        // estimated wait in minutes
 )
 
 data class Patient(

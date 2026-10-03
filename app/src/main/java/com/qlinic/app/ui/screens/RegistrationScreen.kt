@@ -341,6 +341,7 @@ fun ClinicCard(clinic: ClinicItem, isSelected: Boolean, onClick: () -> Unit) {
                     QueueStat("Sedang Dilayani", clinic.currentServing, BluePrimary)
                     QueueStat("Berikutnya", clinic.nextNumber, TextSecondary)
                     QueueStat("Total Berjalan", clinic.totalQueue.toString(), TextSecondary)
+                    QueueStat("Estimasi", "~${clinic.estimatedWaitMin} mnt", YellowAccent)
                 }
             }
         }

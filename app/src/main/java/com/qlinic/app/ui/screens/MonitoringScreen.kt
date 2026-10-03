@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,10 +44,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,9 +83,36 @@ import com.qlinic.app.viewmodel.QueueViewModel
 fun MonitoringScreen(
     viewModel: QueueViewModel,
     onNavigateToCalled: () -> Unit,
-    onNavigateToMissed: () -> Unit
+    onNavigateToMissed: () -> Unit,
+    onCancelled: () -> Unit = {}
 ) {
     val ticket by viewModel.ticket.collectAsState()
+    var showCancelDialog by remember { mutableStateOf(false) }
+
+    // Confirmation dialog for cancellation
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text("Batalkan Antrean?", fontWeight = FontWeight.Bold) },
+            text = { Text("Antrean Anda akan dibatalkan dan tidak dapat dikembalikan. Yakin ingin membatalkan?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCancelDialog = false
+                        viewModel.cancelQueue()
+                        onCancelled()
+                    }
+                ) {
+                    Text("Ya, Batalkan", color = RedError, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelDialog = false }) {
+                    Text("Tidak", color = BluePrimary)
+                }
+            }
+        )
+    }
 
     // Navigate based on status changes
     LaunchedEffect(ticket.status) {
@@ -356,9 +388,9 @@ fun MonitoringScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Shield, contentDescription = null, tint = GreenSuccess, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Pasien BPJS / Umum Terverifikasi", fontSize = 12.sp, color = GreenSuccess)
+                            Text("Pasien Terverifikasi", fontSize = 12.sp, color = GreenSuccess)
                             Spacer(Modifier.weight(1f))
-                            Text("Lihat QB", color = BluePrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text("Kode: ${ticket.ticketCode}", color = BluePrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -368,7 +400,7 @@ fun MonitoringScreen(
             item {
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(
-                    onClick = {},
+                    onClick = { showCancelDialog = true },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = RedError),

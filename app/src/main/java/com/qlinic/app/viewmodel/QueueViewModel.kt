@@ -16,6 +16,26 @@ class QueueViewModel : ViewModel() {
     val clinicList: List<ClinicItem> = QueueRepository.clinicList
     val patient: Patient = QueueRepository.currentPatient
 
+    // Editable profile state
+    private val _profileName = MutableStateFlow(QueueRepository.currentPatient.name)
+    val profileName: StateFlow<String> = _profileName.asStateFlow()
+
+    private val _profilePhone = MutableStateFlow("0812-3456-7890")
+    val profilePhone: StateFlow<String> = _profilePhone.asStateFlow()
+
+    private val _profileEmail = MutableStateFlow("iqbal.ramadhan@email.com")
+    val profileEmail: StateFlow<String> = _profileEmail.asStateFlow()
+
+    private val _profileAddress = MutableStateFlow("Jl. Mawar No. 12, Bogor")
+    val profileAddress: StateFlow<String> = _profileAddress.asStateFlow()
+
+    fun updateProfile(name: String, phone: String, email: String, address: String) {
+        _profileName.value = name
+        _profilePhone.value = phone
+        _profileEmail.value = email
+        _profileAddress.value = address
+    }
+
     // Currently active ticket - wired to repository
     val ticket: StateFlow<QueueTicket> = QueueRepository.ticket
 
@@ -38,7 +58,7 @@ class QueueViewModel : ViewModel() {
     fun cancelQueue() {
         _registrationConfirmed.value = false
         _selectedClinicId.value = null
-        QueueRepository.setStatus(QueueStatus.WAITING)
+        QueueRepository.resetTicket()
     }
 
     /**

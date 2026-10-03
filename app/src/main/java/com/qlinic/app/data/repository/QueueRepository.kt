@@ -24,7 +24,8 @@ object QueueRepository {
             currentServing = "U-038",
             nextNumber = "U-039",
             totalQueue = 39,
-            room = "Ruang 01"
+            room = "Ruang 01",
+            estimatedWaitMin = 15
         ),
         ClinicItem(
             id = "poli_gigi",
@@ -42,12 +43,13 @@ object QueueRepository {
             currentServing = "G-021",
             nextNumber = "G-022",
             totalQueue = 22,
-            room = "Ruang 02"
+            room = "Ruang 02",
+            estimatedWaitMin = 30
         )
     )
 
     val currentPatient = Patient(
-        name = "Astria Rahmawati",
+        name = "Iqbal Ramadhan",
         nik = "3201**********",
         bpjsVerified = true
     )
@@ -75,6 +77,26 @@ object QueueRepository {
 
     fun setStatus(status: QueueStatus) {
         _ticket.value = _ticket.value.copy(status = status)
+    }
+
+    fun resetTicket() {
+        _ticket.value = QueueTicket(
+            ticketNumber = "U-040",
+            clinicName = "Poli Umum",
+            doctorName = "dr. Andini",
+            doctorInfo = DoctorInfo(
+                name = "dr. Andini Kusumawardani",
+                specialization = "Spesialis Kedokteran Keluarga",
+                photoUrl = "",
+                status = "Siap menerima pasien"
+            ),
+            room = "Ruang Periksa 1",
+            status = QueueStatus.WAITING,
+            peopleAhead = 2,
+            estimatedWaitMin = 15,
+            currentServing = "U-038",
+            nextNumber = "U-039"
+        )
     }
 
     fun activateReQueue() {
