@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 class QueueViewModel : ViewModel() {
 
     // Clinic list from repository
-    val clinicList: List<ClinicItem> = QueueRepository.clinicList
+    val clinicList: List<ClinicItem>
+        get() = QueueRepository.clinicList
     val patient: Patient = QueueRepository.currentPatient
 
     // Editable profile state
@@ -53,6 +54,9 @@ class QueueViewModel : ViewModel() {
 
     fun confirmRegistration() {
         _registrationConfirmed.value = true
+        _selectedClinicId.value?.let { clinicId ->
+            QueueRepository.registerQueue(clinicId)
+        }
     }
 
     fun cancelQueue() {
