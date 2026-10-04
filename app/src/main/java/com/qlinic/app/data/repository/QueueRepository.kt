@@ -1,6 +1,7 @@
 package com.qlinic.app.data.repository
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -155,27 +156,57 @@ object QueueRepository {
 
     fun registerQueue(clinicId: String) {
         val selectedClinic = _clinics.value.find { it.id == clinicId } ?: defaultClinics[0]
+        val uid = try { FirebaseAuth.getInstance().currentUser?.uid ?: "" } catch (_: Exception) { "" }
+
         val prefix = if (selectedClinic.queueCode.isNotEmpty()) selectedClinic.queueCode else "U"
-        val nextQueueNumber = "$prefix-${String.format("%03d", selectedClinic.totalQueue + 1)}"
+        val newTotalQueue = selectedClinic.totalQueue + 1
+        val ticketNumber = "$prefix-${String.format("%03d", newTotalQueue)}"
+
+        // Bug 3 fix: generate kode tiket dinamis
+        val cleanNum = ticketNumber.replace("-", "")
+        val randomSuffix = (1000..9999).random()
+        val ticketCode = "QLN-$cleanNum-$randomSuffix"
 
         val newTicket = _ticket.value.copy(
-            ticketNumber = nextQueueNumber,
+            ticketNumber = ticketNumber,
             clinicName = selectedClinic.name,
             doctorName = selectedClinic.doctor.name.split(" ").take(2).joinToString(" "),
             doctorInfo = selectedClinic.doctor,
             room = selectedClinic.room,
             status = QueueStatus.WAITING,
             currentServing = selectedClinic.currentServing,
-            nextNumber = selectedClinic.nextNumber,
-            reQueueUsed = false
+            nextNumber = ticketNumber,
+            ticketCode = ticketCode,
+            reQueueUsed = false,
+            userId = uid
         )
 
         _ticket.value = newTicket
         try {
-            database.getReference("current_queue/activeTicket").setValue(newTicket)
+            val clinicRef = database.getReference("clinics/${clinicId}")
+            val activeRef = database.getReference("current_queue/activeTicket")
+
+            // Update nextNumber for dashboard display
+            val currentServingNum = selectedClinic.currentServing.substringAfter("-").toIntOrNull() ?: 1
+            val nextNumStr = if (currentServingNum < newTotalQueue) {
+                "$prefix-${String.format("%03d", currentServingNum + 1)}"
+            } else {
+                "—"
+            }
+
+            clinicRef.updateChildren(mapOf(
+                "totalQueue" to newTotalQueue,
+                "nextNumber" to nextNumStr
+            ))
+
+            activeRef.setValue(newTicket)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to register queue in Firebase", e)
         }
+    }
+
+    fun clearLocalTicket() {
+        _ticket.value = defaultTicket
     }
 
     // Helper parser functions
@@ -234,6 +265,7 @@ object QueueRepository {
             val nextNumber = child("nextNumber").getValue(String::class.java) ?: "U-039"
             val reQueueUsed = child("reQueueUsed").getValue(Boolean::class.java) ?: false
             val missedCount = (child("missedCount").getValue(Long::class.java) ?: 0L).toInt()
+            val userId = child("userId").getValue(String::class.java) ?: ""
 
             QueueTicket(
                 ticketNumber = ticketNumber,
@@ -252,7 +284,8 @@ object QueueRepository {
                 currentServing = currentServing,
                 nextNumber = nextNumber,
                 reQueueUsed = reQueueUsed,
-                missedCount = missedCount
+                missedCount = missedCount,
+                userId = userId
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing QueueTicket", e)

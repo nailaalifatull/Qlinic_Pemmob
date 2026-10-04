@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.qlinic.app.data.model.HistoryEntry
 import com.qlinic.app.ui.theme.BackgroundGray
 import com.qlinic.app.ui.theme.BlueDark
 import com.qlinic.app.ui.theme.BlueLight
@@ -55,6 +57,8 @@ import com.qlinic.app.ui.theme.BluePrimary
 import com.qlinic.app.ui.theme.GreenLight
 import com.qlinic.app.ui.theme.GreenSuccess
 import com.qlinic.app.ui.theme.PinkPrimary
+import com.qlinic.app.ui.theme.RedError
+import com.qlinic.app.ui.theme.RedLight
 import com.qlinic.app.ui.theme.TextMuted
 import com.qlinic.app.ui.theme.TextPrimary
 import com.qlinic.app.ui.theme.TextSecondary
@@ -73,12 +77,8 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit = {}
 ) {
     val name by viewModel.profileName.collectAsState()
+    val clinics by viewModel.clinics.collectAsState()
     val initials = name.trim().split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
-
-    val poliList = listOf(
-        Triple("Poli Umum", "dr. Andini Kusumawardani", Icons.Default.MedicalServices),
-        Triple("Poli Gigi", "drg. Raka Pradipta", Icons.Default.Medication)
-    )
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(BackgroundGray),
@@ -219,12 +219,11 @@ fun HomeScreen(
             Spacer(Modifier.height(12.dp))
         }
 
-        items(poliList) { (poliName, doctor, icon) ->
-            PoliCard(name = poliName, doctor = doctor, icon = icon)
+        items(clinics) { clinic ->
+            val icon = if (clinic.icon == "dental") Icons.Default.Medication else Icons.Default.MedicalServices
+            PoliCard(name = clinic.name, doctor = clinic.doctor.name, icon = icon, isOpen = clinic.isOpen)
             Spacer(Modifier.height(8.dp))
         }
-
-
     }
 }
 
@@ -258,7 +257,12 @@ fun ClinicInfoRow(icon: ImageVector, label: String, value: String, isLast: Boole
 }
 
 @Composable
-fun PoliCard(name: String, doctor: String, icon: ImageVector) {
+fun PoliCard(name: String, doctor: String, icon: ImageVector, isOpen: Boolean = true) {
+    val badgeBg = if (isOpen) GreenLight else RedLight
+    val badgeText = if (isOpen) GreenSuccess else RedError
+    val dotColor = if (isOpen) GreenSuccess else RedError
+    val label = if (isOpen) "Buka" else "Tutup"
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
         shape = RoundedCornerShape(14.dp),
@@ -270,10 +274,10 @@ fun PoliCard(name: String, doctor: String, icon: ImageVector) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(42.dp).clip(CircleShape).background(GreenLight),
+                modifier = Modifier.size(42.dp).clip(CircleShape).background(if (isOpen) GreenLight else RedLight),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = GreenSuccess, modifier = Modifier.size(24.dp))
+                Icon(icon, contentDescription = null, tint = if (isOpen) GreenSuccess else RedError, modifier = Modifier.size(24.dp))
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -281,12 +285,12 @@ fun PoliCard(name: String, doctor: String, icon: ImageVector) {
                 Text(doctor, fontSize = 12.sp, color = TextSecondary)
             }
             Row(
-                modifier = Modifier.background(GreenLight, RoundedCornerShape(20.dp)).padding(horizontal = 8.dp, vertical = 3.dp),
+                modifier = Modifier.background(badgeBg, RoundedCornerShape(20.dp)).padding(horizontal = 8.dp, vertical = 3.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(GreenSuccess))
+                Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(dotColor))
                 Spacer(Modifier.width(4.dp))
-                Text("Buka", color = GreenSuccess, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                Text(label, color = badgeText, fontSize = 11.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -294,32 +298,9 @@ fun PoliCard(name: String, doctor: String, icon: ImageVector) {
 
 // ========== HISTORY SCREEN ==========
 
-data class HistoryEntry(
-    val ticketNumber: String,
-    val clinicName: String,
-    val doctorName: String,
-    val date: String,
-    val status: String
-)
-
 @Composable
-fun HistoryScreen() {
-    val historyList = listOf(
-        HistoryEntry(
-            ticketNumber = "U-027",
-            clinicName = "Poli Umum",
-            doctorName = "dr. Andini Kusumawardani",
-            date = "Senin, 20 Oktober 2025",
-            status = "Selesai"
-        ),
-        HistoryEntry(
-            ticketNumber = "G-014",
-            clinicName = "Poli Gigi",
-            doctorName = "drg. Raka Pradipta",
-            date = "Rabu, 8 Oktober 2025",
-            status = "Selesai"
-        )
-    )
+fun HistoryScreen(viewModel: QueueViewModel) {
+    val historyList by viewModel.historyList.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(BackgroundGray),
@@ -334,15 +315,46 @@ fun HistoryScreen() {
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
             )
         }
-        items(historyList) { entry ->
-            HistoryCard(entry = entry)
-            Spacer(Modifier.height(10.dp))
+
+        if (historyList.isEmpty()) {
+            item {
+                Spacer(Modifier.height(60.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        Icons.Default.History,
+                        contentDescription = null,
+                        tint = TextSecondary.copy(0.4f),
+                        modifier = Modifier.size(56.dp)
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "Belum ada riwayat kunjungan.",
+                        fontSize = 14.sp,
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            items(historyList) { entry ->
+                HistoryCard(entry = entry)
+                Spacer(Modifier.height(10.dp))
+            }
         }
     }
 }
 
 @Composable
 fun HistoryCard(entry: HistoryEntry) {
+    val isExpired = entry.status == "Kadaluarsa"
+    val iconBg = if (isExpired) RedLight else GreenLight
+    val iconTint = if (isExpired) RedError else GreenSuccess
+    val badgeBg = if (isExpired) RedLight else GreenLight
+    val badgeText = if (isExpired) RedError else GreenSuccess
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
         shape = RoundedCornerShape(16.dp),
@@ -354,25 +366,34 @@ fun HistoryCard(entry: HistoryEntry) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(44.dp).clip(CircleShape).background(GreenLight),
+                modifier = Modifier.size(44.dp).clip(CircleShape).background(iconBg),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = GreenSuccess, modifier = Modifier.size(24.dp))
+                Icon(
+                    imageVector = if (isExpired) Icons.Default.Warning else Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(24.dp)
+                )
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(entry.clinicName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
                 Text(entry.doctorName, fontSize = 12.sp, color = TextSecondary)
                 Spacer(Modifier.height(4.dp))
-                Text(entry.date, fontSize = 11.sp, color = TextMuted)
+                Text(
+                    if (entry.time.isNotEmpty()) "${entry.date} · ${entry.time}" else entry.date,
+                    fontSize = 11.sp,
+                    color = TextMuted
+                )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Box(
                     modifier = Modifier
-                        .background(GreenLight, RoundedCornerShape(20.dp))
+                        .background(badgeBg, RoundedCornerShape(20.dp))
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
-                    Text(entry.status, color = GreenSuccess, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                    Text(entry.status, color = badgeText, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(entry.ticketNumber, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = BluePrimary)

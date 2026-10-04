@@ -16,6 +16,7 @@
       --pink-light: #FCE4F3;
       --green: #10B981;
       --red: #EF4444;
+      --red-light: #FEF2F2;
       --yellow: #F59E0B;
       --bg: #F8FAFC;
       --card-bg: #FFFFFF;
@@ -105,6 +106,10 @@
       .clinics-grid {
         flex-direction: column;
       }
+
+      .control-section {
+        flex-direction: column !important;
+      }
     }
 
     .clinic-card {
@@ -114,6 +119,30 @@
       overflow: hidden;
       border: 1px solid #E2E8F0;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      position: relative;
+      transition: opacity 0.3s ease;
+    }
+
+    .clinic-card.is-closed {
+      opacity: 0.72;
+    }
+
+    .clinic-closed-overlay {
+      display: none;
+      background: rgba(254, 242, 242, 0.92);
+      border: 1px dashed var(--red);
+      border-radius: 12px;
+      margin: 0 1.5rem 1rem 1.5rem;
+      padding: 0.75rem 1rem;
+      color: var(--red);
+      font-size: 0.82rem;
+      font-weight: 600;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .clinic-card.is-closed .clinic-closed-overlay {
+      display: flex;
     }
 
     /* ── Card header band ── */
@@ -210,7 +239,7 @@
       background: var(--pink-light);
     }
 
-    /* ── Buttons ── */
+    /* ── Per-card buttons ── */
     .btn-group {
       display: flex;
       flex-direction: column;
@@ -232,13 +261,20 @@
       width: 100%;
     }
 
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     }
 
-    .btn:active {
+    .btn:active:not(:disabled) {
       transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     .btn-call {
@@ -268,6 +304,83 @@
     .info-row span b {
       color: var(--text);
     }
+
+    /* ── Global clinic control section ── */
+    .control-section {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-open-clinic {
+      background: linear-gradient(135deg, #059669, var(--green));
+      color: white;
+      font-size: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      flex: 1;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-open-clinic:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-open-clinic:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-close-clinic {
+      background: linear-gradient(135deg, #b91c1c, var(--red));
+      color: white;
+      font-size: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 16px;
+      flex: 1;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-close-clinic:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-close-clinic:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .control-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      margin-top: 1.5rem;
+    }
   </style>
 </head>
 
@@ -291,7 +404,7 @@
     <div class="clinics-grid">
 
       <!-- ═══════════════ CARD POLI UMUM ═══════════════ -->
-      <div class="clinic-card clinic-card--umum">
+      <div class="clinic-card clinic-card--umum" id="card-umum">
         <div class="clinic-card__header">
           <div class="clinic-card__header-row">
             <span>Poli Umum</span>
@@ -302,6 +415,10 @@
         </div>
 
         <div class="clinic-card__body">
+          <div class="clinic-closed-overlay" id="umum-closed-msg">
+            Klinik sedang tutup. Klik "Buka Antrean Klinik" untuk mereset nomor antrean pasien.
+          </div>
+
           <hr class="divider">
 
           <div class="queue-number-bg">
@@ -316,10 +433,10 @@
           <hr class="divider">
 
           <div class="btn-group">
-            <button class="btn btn-call" onclick="callPatient('poli_umum')">
+            <button class="btn btn-call" id="umum-btn-call" onclick="callPatient('poli_umum')">
               Panggil Pasien Ini
             </button>
-            <button class="btn btn-next-umum" onclick="callNext('poli_umum')">
+            <button class="btn btn-next-umum" id="umum-btn-next" onclick="callNext('poli_umum')">
               Panggil Antrean Selanjutnya
             </button>
           </div>
@@ -327,7 +444,7 @@
       </div>
 
       <!-- ═══════════════ CARD POLI GIGI ═══════════════ -->
-      <div class="clinic-card clinic-card--gigi">
+      <div class="clinic-card clinic-card--gigi" id="card-gigi">
         <div class="clinic-card__header">
           <div class="clinic-card__header-row">
             <span>Poli Gigi</span>
@@ -338,6 +455,10 @@
         </div>
 
         <div class="clinic-card__body">
+          <div class="clinic-closed-overlay" id="gigi-closed-msg">
+            Klinik sedang tutup. Klik "Buka Antrean Klinik" untuk mereset nomor antrean pasien.
+          </div>
+
           <hr class="divider">
 
           <div class="queue-number-bg">
@@ -352,10 +473,10 @@
           <hr class="divider">
 
           <div class="btn-group">
-            <button class="btn btn-call" onclick="callPatient('poli_gigi')">
+            <button class="btn btn-call" id="gigi-btn-call" onclick="callPatient('poli_gigi')">
               Panggil Pasien Ini
             </button>
-            <button class="btn btn-next-gigi" onclick="callNext('poli_gigi')">
+            <button class="btn btn-next-gigi" id="gigi-btn-next" onclick="callNext('poli_gigi')">
               Panggil Antrean Selanjutnya
             </button>
           </div>
@@ -363,12 +484,24 @@
       </div>
 
     </div><!-- /clinics-grid -->
+
+    <!-- ═══════════════ KONTROL GLOBAL KLINIK ═══════════════ -->
+    <p class="control-label">Kontrol Status Klinik</p>
+    <div class="control-section">
+      <button class="btn-open-clinic" id="btn-open-clinic" onclick="openClinic()" disabled>
+        Buka Antrean Klinik
+      </button>
+      <button class="btn-close-clinic" id="btn-close-clinic" onclick="closeClinic()" disabled>
+        Tutup Klinik &amp; Non-Aktifkan Antrean Poliklinik
+      </button>
+    </div>
+
   </main>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, get, push, set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       databaseURL: "https://algifariprojects-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -378,8 +511,80 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Track global isOpen state ─────────────────────────────────────────────
+    let clinicIsOpen = null;
 
+    onValue(ref(db, 'clinics/poli_umum/isOpen'), (snapshot) => {
+      const val = snapshot.val();
+      clinicIsOpen = val !== false;
+      updateControlButtons();
+      updateCardStates();
+    });
+
+    function updateControlButtons() {
+      const btnOpen = document.getElementById('btn-open-clinic');
+      const btnClose = document.getElementById('btn-close-clinic');
+      if (clinicIsOpen === null) {
+        btnOpen.disabled = true;
+        btnClose.disabled = true;
+      } else {
+        btnOpen.disabled = clinicIsOpen;    // disable "Buka" ketika sudah buka
+        btnClose.disabled = !clinicIsOpen;  // disable "Tutup" ketika sudah tutup
+      }
+    }
+
+    function updateCardStates() {
+      const cards = ['umum', 'gigi'];
+      cards.forEach(prefix => {
+        const card = document.getElementById(`card-${prefix}`);
+        const btnCall = document.getElementById(`${prefix}-btn-call`);
+        const btnNext = document.getElementById(`${prefix}-btn-next`);
+
+        if (!clinicIsOpen) {
+          card.classList.add('is-closed');
+          btnCall.disabled = true;
+          btnNext.disabled = true;
+        } else {
+          card.classList.remove('is-closed');
+          btnCall.disabled = false;
+          btnNext.disabled = false;
+        }
+      });
+    }
+
+    // ── Helper: pindah activeTicket ke riwayat ────────────────────────
+    async function archiveActiveTicket(status) {
+      const ticketSnap = await get(ref(db, 'current_queue/activeTicket'));
+      if (!ticketSnap.exists()) return;
+
+      const ticket = ticketSnap.val();
+      const userId = ticket.userId || null;
+
+      if (userId) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('id-ID', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        const timeStr = now.toLocaleTimeString('id-ID', {
+          hour: '2-digit', minute: '2-digit'
+        }) + ' WIB';
+
+        const historyEntry = {
+          ticketNumber: ticket.ticketNumber || '—',
+          clinicName: ticket.clinicName || '—',
+          doctorName: ticket.doctorName || '—',
+          date: dateStr,
+          time: timeStr,
+          status: status
+        };
+
+        await push(ref(db, `history/${userId}`), historyEntry);
+      }
+
+      await remove(ref(db, 'current_queue/activeTicket'));
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     function incrementQueue(current) {
       const match = current.match(/^([A-Z]+)-(\d+)$/);
@@ -389,7 +594,7 @@
       return `${prefix}-${String(num).padStart(3, '0')}`;
     }
 
-    // ── Live listeners for each clinic ───────────────────────────────────────
+    // ── Live listeners for each clinic ────────────────────────────────────────
 
     function bindClinic(clinicId) {
       const prefix = clinicId === 'poli_umum' ? 'umum' : 'gigi';
@@ -418,19 +623,90 @@
     // ── Button actions ────────────────────────────────────────────────────────
 
     /**
+     * "Buka Antrean Klinik":
+     * - Arsip tiket aktif ke history (Kadaluarsa) kalau ada
+     * - Reset currentServing, nextNumber, totalQueue
+     * - Set isOpen = true untuk kedua poli
+     */
+    window.openClinic = async () => {
+      const btn = document.getElementById('btn-open-clinic');
+      btn.disabled = true;
+      btn.textContent = 'Membuka antrean...';
+
+      try {
+        // 1. Arsip tiket aktif yang sedang WAITING
+        const ticketSnap = await get(ref(db, 'current_queue/activeTicket'));
+        if (ticketSnap.exists() && ticketSnap.val().status === 'WAITING') {
+          await archiveActiveTicket('Kadaluarsa');
+        } else if (ticketSnap.exists()) {
+          await remove(ref(db, 'current_queue/activeTicket'));
+        }
+
+        // 2. Reset & buka kedua poli
+        await Promise.all([
+          update(ref(db, 'clinics/poli_umum'), {
+            isOpen: true,
+            currentServing: 'U-001',
+            nextNumber: '—',
+            totalQueue: 0
+          }),
+          update(ref(db, 'clinics/poli_gigi'), {
+            isOpen: true,
+            currentServing: 'G-001',
+            nextNumber: '—',
+            totalQueue: 0
+          })
+        ]);
+
+        console.log('Klinik berhasil dibuka dan antrean direset.');
+      } catch (err) {
+        alert('Gagal membuka klinik: ' + err.message);
+        console.error(err);
+      }
+
+      btn.textContent = 'Buka Antrean Klinik';
+    };
+
+    /**
+     * "Tutup Klinik":
+     * - Arsip tiket aktif ke history (Kadaluarsa)
+     * - Set isOpen = false untuk kedua poli
+     */
+    window.closeClinic = async () => {
+      if (!confirm('Yakin ingin menutup klinik? Tiket pasien yang aktif akan hangus.')) return;
+
+      const btn = document.getElementById('btn-close-clinic');
+      btn.disabled = true;
+      btn.textContent = 'Menutup klinik...';
+
+      try {
+        // 1. Arsip tiket aktif
+        await archiveActiveTicket('Kadaluarsa');
+
+        // 2. Tutup kedua poli
+        await Promise.all([
+          update(ref(db, 'clinics/poli_umum'), { isOpen: false }),
+          update(ref(db, 'clinics/poli_gigi'), { isOpen: false })
+        ]);
+
+        console.log('Klinik berhasil ditutup.');
+      } catch (err) {
+        alert('Gagal menutup klinik: ' + err.message);
+        console.error(err);
+      }
+
+      btn.textContent = 'Tutup Klinik & Non-Aktifkan Antrean Poliklinik';
+    };
+
+    /**
      * "Panggil Pasien Ini": set status tiket aktif jadi CALLED.
-     * Path disesuaikan dengan clinicId agar masing-masing poli punya tiket sendiri.
-     * Saat ini semua poli memakai satu node activeTicket.
      */
     window.callPatient = (clinicId) => {
       const ticketRef = ref(db, 'current_queue/activeTicket');
       update(ticketRef, { status: 'CALLED' });
     };
 
-    /**
-     * "Panggil Selanjutnya": naikkan currentServing ke nomor berikutnya,
-     * geser nextNumber satu langkah lagi, update Firebase.
-     */
+    // "Panggil Selanjutnya": naikkan currentServing ke nomor berikutnya
     window.callNext = async (clinicId) => {
       const clinicRef = ref(db, `clinics/${clinicId}`);
       const snapshot = await get(clinicRef);
@@ -446,9 +722,10 @@
       const prefix = match[1];
       const currentNum = parseInt(match[2], 10);
 
-      // ── Batas atas: stop kalau sudah mencapai totalQueue ──
-      if (currentNum >= total) {
-        alert(`Antrean ${prefix} sudah mencapai nomor terakhir (${current}).`);
+      // Batas atas: stop kalau currentServing sudah melewati semua tiket yang terbit
+      if (currentNum > total) {
+        const poliLabel = clinicId === 'poli_gigi' ? 'Poli Gigi' : 'Poli Umum';
+        alert(`Antrean ${poliLabel} sudah mencapai nomor terakhir (${current}). Belum ada pasien baru yang mendaftar.`);
         return;
       }
 

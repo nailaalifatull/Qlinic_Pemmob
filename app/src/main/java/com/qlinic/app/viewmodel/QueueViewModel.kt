@@ -8,12 +8,16 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.qlinic.app.data.model.ClinicItem
+import com.qlinic.app.data.model.HistoryEntry
 import com.qlinic.app.data.model.Patient
 import com.qlinic.app.data.model.QueueTicket
 import com.qlinic.app.data.repository.QueueRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class QueueViewModel : ViewModel() {
 
@@ -22,12 +26,36 @@ class QueueViewModel : ViewModel() {
         "https://algifariprojects-default-rtdb.asia-southeast1.firebasedatabase.app"
     )
 
-    // Clinic list from repository
+    val clinics: StateFlow<List<ClinicItem>> = QueueRepository.clinics
+
+    /** Backward-compat static accessor (used in ConfirmationCard) */
     val clinicList: List<ClinicItem>
         get() = QueueRepository.clinicList
+
     val patient: Patient = QueueRepository.currentPatient
 
-    // Profile data — loaded from Firebase RTDB users/{uid}
+    // ── Active ticket ─────────────────────────────────────────────────────────
+    val ticket: StateFlow<QueueTicket> = QueueRepository.ticket
+
+    // ── Registration state ────────────────────────────────────────────────────
+    private val _selectedClinicId = MutableStateFlow<String?>(null)
+    val selectedClinicId: StateFlow<String?> = _selectedClinicId.asStateFlow()
+
+    private val _registrationConfirmed = MutableStateFlow(false)
+    val registrationConfirmed: StateFlow<Boolean> = _registrationConfirmed.asStateFlow()
+
+    // ── Ticket end state — null = active, "SELESAI", "KADALUARSA" ─────────────
+    private val _ticketEndState = MutableStateFlow<String?>(null)
+    val ticketEndState: StateFlow<String?> = _ticketEndState.asStateFlow()
+
+    // ── History ───────────────────────────────────────────────────────────────
+    private val _historyList = MutableStateFlow<List<HistoryEntry>>(emptyList())
+    val historyList: StateFlow<List<HistoryEntry>> = _historyList.asStateFlow()
+
+    private var historyListener: ValueEventListener? = null
+    private var historyRef: DatabaseReference? = null
+
+    // ── Profile data — loaded from RTDB users/{uid} ───────────────────────────
     private val _profileName = MutableStateFlow("")
     val profileName: StateFlow<String> = _profileName.asStateFlow()
 
@@ -41,13 +69,15 @@ class QueueViewModel : ViewModel() {
     private val _profileAddress = MutableStateFlow("")
     val profileAddress: StateFlow<String> = _profileAddress.asStateFlow()
 
-    // RTDB listener — kept so we can remove it in onCleared
     private var profileListener: ValueEventListener? = null
     private var profileRef: DatabaseReference? = null
 
     init {
         loadUserProfile()
+        loadHistory()
     }
+
+    // ── Profile ───────────────────────────────────────────────────────────────
 
     private fun loadUserProfile() {
         val uid = auth.currentUser?.uid ?: return
@@ -80,16 +110,72 @@ class QueueViewModel : ViewModel() {
         _profileAddress.value = address.trim()
     }
 
-    // Currently active ticket - wired to repository
-    val ticket: StateFlow<QueueTicket> = QueueRepository.ticket
+    // ── History ───────────────────────────────────────────────────────────────
 
-    // Selected clinic during registration
-    private val _selectedClinicId = MutableStateFlow<String?>(null)
-    val selectedClinicId: StateFlow<String?> = _selectedClinicId.asStateFlow()
+    private fun loadHistory() {
+        val uid = auth.currentUser?.uid ?: return
+        val ref = database.getReference("history/$uid")
+        historyRef = ref
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<HistoryEntry>()
+                for (child in snapshot.children) {
+                    val ticketNumber = child.child("ticketNumber").getValue(String::class.java) ?: continue
+                    val clinicName = child.child("clinicName").getValue(String::class.java) ?: ""
+                    val doctorName = child.child("doctorName").getValue(String::class.java) ?: ""
+                    val date = child.child("date").getValue(String::class.java) ?: ""
+                    val time = child.child("time").getValue(String::class.java) ?: ""
+                    val status = child.child("status").getValue(String::class.java) ?: ""
+                    list.add(HistoryEntry(ticketNumber, clinicName, doctorName, date, time, status))
+                }
+                
+                _historyList.value = list.reversed()
+            }
+            override fun onCancelled(error: DatabaseError) { /* no-op */ }
+        }
+        historyListener = listener
+        ref.addValueEventListener(listener)
+    }
 
-    // Registration confirmed
-    private val _registrationConfirmed = MutableStateFlow(false)
-    val registrationConfirmed: StateFlow<Boolean> = _registrationConfirmed.asStateFlow()
+    private fun archiveTicket(status: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val t = QueueRepository.ticket.value
+        if (t.ticketNumber.isEmpty()) return
+
+        val dateFormat = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("id", "ID"))
+        val timeFormat = SimpleDateFormat("HH:mm", Locale("id", "ID"))
+        val now = Date()
+        val entry = mapOf(
+            "ticketNumber" to t.ticketNumber,
+            "clinicName" to t.clinicName,
+            "doctorName" to t.doctorName,
+            "date" to dateFormat.format(now),
+            "time" to "${timeFormat.format(now)} WIB",
+            "status" to status
+        )
+        database.getReference("history/$uid").push().setValue(entry)
+        QueueRepository.clearLocalTicket()
+    }
+
+    fun completeTicket() {
+        if (_ticketEndState.value != null) return // already ended
+        archiveTicket("Selesai")
+        _ticketEndState.value = "SELESAI"
+        _registrationConfirmed.value = false
+    }
+
+    fun expireTicket() {
+        if (_ticketEndState.value != null) return // already ended
+        archiveTicket("Kadaluarsa")
+        _ticketEndState.value = "KADALUARSA"
+        _registrationConfirmed.value = false
+    }
+
+    fun resetTicketEndState() {
+        _ticketEndState.value = null
+    }
+
+    // ── Queue registration ────────────────────────────────────────────────────
 
     fun selectClinic(clinicId: String) {
         _selectedClinicId.value = clinicId
@@ -97,9 +183,8 @@ class QueueViewModel : ViewModel() {
 
     fun confirmRegistration() {
         _registrationConfirmed.value = true
-        _selectedClinicId.value?.let { clinicId ->
-            QueueRepository.registerQueue(clinicId)
-        }
+        _ticketEndState.value = null 
+        _selectedClinicId.value?.let { QueueRepository.registerQueue(it) }
     }
 
     fun cancelQueue() {
@@ -110,7 +195,7 @@ class QueueViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        // Remove the RTDB listener to prevent memory leaks
         profileListener?.let { profileRef?.removeEventListener(it) }
+        historyListener?.let { historyRef?.removeEventListener(it) }
     }
 }

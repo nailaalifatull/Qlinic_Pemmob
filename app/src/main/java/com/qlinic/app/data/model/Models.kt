@@ -53,5 +53,16 @@ data class QueueTicket(
     val currentServing: String = "U-038",
     val nextNumber: String = "U-039",
     val reQueueUsed: Boolean = false,
-    val missedCount: Int = 0
+    val missedCount: Int = 0,
+    val userId: String = ""  // Firebase Auth UID — needed for admin dashboard history write
+)
+
+/** History entry stored at history/{userId}/{pushKey}/ in Firebase RTDB */
+data class HistoryEntry(
+    val ticketNumber: String = "",
+    val clinicName: String = "",
+    val doctorName: String = "",
+    val date: String = "",
+    val time: String = "",
+    val status: String = ""   // "Selesai" | "Kadaluarsa"
 )

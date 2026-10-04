@@ -193,11 +193,20 @@ fun MainAppScreen(onLogout: () -> Unit) {
                     )
                     "monitoring" -> MonitoringScreen(
                         viewModel = viewModel,
-                        onCancelled = { queueRoute = "registration" }
+                        onCancelled = { queueRoute = "registration" },
+                        onNavigateToHistory = {
+                            queueRoute = "registration"
+                            viewModel.resetTicketEndState()
+                            navController.navigate(BottomNavRoute.History.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
                     )
                 }
             }
-            composable(BottomNavRoute.History.route) { HistoryScreen() }
+            composable(BottomNavRoute.History.route) { HistoryScreen(viewModel = viewModel) }
             composable(BottomNavRoute.Profile.route) {
                 ProfileScreen(viewModel = viewModel, onLogout = onLogout)
             }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
@@ -65,6 +66,8 @@ import com.qlinic.app.ui.theme.GreenLight
 import com.qlinic.app.ui.theme.GreenSuccess
 import com.qlinic.app.ui.theme.PinkLight
 import com.qlinic.app.ui.theme.PinkPrimary
+import com.qlinic.app.ui.theme.RedError
+import com.qlinic.app.ui.theme.RedLight
 import com.qlinic.app.ui.theme.TextPrimary
 import com.qlinic.app.ui.theme.TextSecondary
 import com.qlinic.app.ui.theme.White
@@ -79,6 +82,7 @@ fun RegistrationScreen(
 ) {
     val selectedId by viewModel.selectedClinicId.collectAsState()
     val profileName by viewModel.profileName.collectAsState()
+    val clinics by viewModel.clinics.collectAsState()
     var showConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -169,21 +173,24 @@ fun RegistrationScreen(
                         "Pilih Layanan Poliklinik",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
+                    val openCount = clinics.count { it.isOpen }
                     Text(
-                        "${viewModel.clinicList.size} Layanan Tersedia",
+                        "$openCount Layanan Tersedia",
                         color = BluePrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium
                     )
                 }
             }
 
             // Clinic cards
-            items(viewModel.clinicList) { clinic ->
+            items(clinics) { clinic ->
                 ClinicCard(
                     clinic = clinic,
                     isSelected = selectedId == clinic.id,
                     onClick = {
-                        viewModel.selectClinic(clinic.id)
-                        showConfirmation = true
+                        if (clinic.isOpen) {
+                            viewModel.selectClinic(clinic.id)
+                            showConfirmation = true
+                        }
                     }
                 )
                 Spacer(Modifier.height(12.dp))
@@ -195,7 +202,7 @@ fun RegistrationScreen(
                     visible = showConfirmation && selectedId != null,
                     enter = fadeIn() + expandVertically()
                 ) {
-                    val clinic = viewModel.clinicList.find { it.id == selectedId }
+                    val clinic = clinics.find { it.id == selectedId }
                     if (clinic != null) {
                         ConfirmationCard(
                             clinic = clinic,
@@ -214,8 +221,16 @@ fun RegistrationScreen(
 
 @Composable
 fun ClinicCard(clinic: ClinicItem, isSelected: Boolean, onClick: () -> Unit) {
-    val borderColor = if (isSelected) BluePrimary else BorderLight
-    val bgColor = if (isSelected) BlueLight else White
+    val borderColor = when {
+        !clinic.isOpen -> RedError.copy(alpha = 0.4f)
+        isSelected     -> BluePrimary
+        else           -> BorderLight
+    }
+    val bgColor = when {
+        !clinic.isOpen -> BackgroundGray
+        isSelected     -> BlueLight
+        else           -> White
+    }
 
     Card(
         modifier = Modifier
@@ -225,7 +240,7 @@ fun ClinicCard(clinic: ClinicItem, isSelected: Boolean, onClick: () -> Unit) {
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected && clinic.isOpen) 4.dp else 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -238,26 +253,30 @@ fun ClinicCard(clinic: ClinicItem, isSelected: Boolean, onClick: () -> Unit) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(BlueLight),
+                            .background(if (clinic.isOpen) BlueLight else BorderLight),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (clinic.icon == "dental") Icons.Default.Spa else Icons.Default.LocalHospital,
                             contentDescription = null,
-                            tint = BluePrimary,
+                            tint = if (clinic.isOpen) BluePrimary else TextSecondary,
                             modifier = Modifier.size(22.dp)
                         )
                     }
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text(clinic.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text(clinic.name, fontWeight = FontWeight.Bold, fontSize = 16.sp,
+                            color = if (clinic.isOpen) TextPrimary else TextSecondary)
                         Text("Kode antrean: ${clinic.queueCode}", fontSize = 11.sp, color = TextSecondary)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .background(GreenLight, RoundedCornerShape(20.dp))
+                            .background(
+                                if (clinic.isOpen) GreenLight else RedLight,
+                                RoundedCornerShape(20.dp)
+                            )
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -265,17 +284,38 @@ fun ClinicCard(clinic: ClinicItem, isSelected: Boolean, onClick: () -> Unit) {
                                 modifier = Modifier
                                     .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(GreenSuccess)
+                                    .background(if (clinic.isOpen) GreenSuccess else RedError)
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text("Buka", color = GreenSuccess, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            Text(
+                                if (clinic.isOpen) "Buka" else "Tutup",
+                                color = if (clinic.isOpen) GreenSuccess else RedError,
+                                fontSize = 11.sp, fontWeight = FontWeight.Medium
+                            )
                         }
                     }
-                    if (isSelected) {
+                    if (isSelected && clinic.isOpen) {
                         Spacer(Modifier.width(8.dp))
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(24.dp))
                     }
                 }
+            }
+
+            if (!clinic.isOpen) {
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = BorderLight, thickness = 1.dp)
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, contentDescription = null,
+                        tint = RedError, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Klinik sedang tutup.",
+                        fontSize = 12.sp, color = RedError.copy(alpha = 0.85f)
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                return@Column
             }
 
             Spacer(Modifier.height(12.dp))
@@ -332,6 +372,7 @@ fun ClinicCard(clinic: ClinicItem, isSelected: Boolean, onClick: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 fun QueueStat(label: String, value: String, valueColor: Color) {

@@ -19,11 +19,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,30 +48,62 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.qlinic.app.data.model.QueueStatus
 import com.qlinic.app.ui.theme.BackgroundGray
 import com.qlinic.app.ui.theme.BlueDeep
 import com.qlinic.app.ui.theme.BlueLight
 import com.qlinic.app.ui.theme.BluePrimary
 import com.qlinic.app.ui.theme.BorderLight
+import com.qlinic.app.ui.theme.GreenLight
 import com.qlinic.app.ui.theme.GreenSuccess
 import com.qlinic.app.ui.theme.PinkPrimary
 import com.qlinic.app.ui.theme.RedError
+import com.qlinic.app.ui.theme.RedLight
 import com.qlinic.app.ui.theme.TextPrimary
 import com.qlinic.app.ui.theme.TextSecondary
 import com.qlinic.app.ui.theme.White
+import com.qlinic.app.ui.theme.YellowAccent
+import com.qlinic.app.ui.theme.YellowLight
 import com.qlinic.app.viewmodel.QueueViewModel
 
 @Composable
 fun MonitoringScreen(
     viewModel: QueueViewModel,
-    onCancelled: () -> Unit = {}
+    onCancelled: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {}
 ) {
     val ticket by viewModel.ticket.collectAsState()
+    val clinics by viewModel.clinics.collectAsState()
+    val registrationConfirmed by viewModel.registrationConfirmed.collectAsState()
+    val ticketEndState by viewModel.ticketEndState.collectAsState()
     var showCancelDialog by remember { mutableStateOf(false) }
 
-    // Confirmation dialog for cancellation
+    LaunchedEffect(clinics, ticket.ticketNumber) {
+        if (!registrationConfirmed) return@LaunchedEffect
+        if (ticketEndState != null) return@LaunchedEffect          
+        if (ticket.status != QueueStatus.WAITING) return@LaunchedEffect
+        if (ticket.ticketNumber.isBlank()) return@LaunchedEffect
+
+        val ticketPrefix = ticket.ticketNumber.substringBefore("-")
+        val clinic = clinics.find { it.queueCode == ticketPrefix } ?: return@LaunchedEffect
+
+        // admin tutup klinik
+        if (!clinic.isOpen) {
+            viewModel.expireTicket()
+            return@LaunchedEffect
+        }
+
+        // nomor sudah dilewati admin
+        val ticketNum = ticket.ticketNumber.substringAfter("-").toIntOrNull() ?: return@LaunchedEffect
+        val servingNum = clinic.currentServing.substringAfter("-").toIntOrNull() ?: return@LaunchedEffect
+        if (ticketNum < servingNum) {
+            viewModel.completeTicket()
+        }
+    }
+
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
@@ -124,6 +161,72 @@ fun MonitoringScreen(
                     }
                 }
             }
+
+            
+            if (ticketEndState != null) {
+                item {
+                    Spacer(Modifier.height(32.dp))
+                    val isExpired = ticketEndState == "KADALUARSA"
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(if (isExpired) RedLight else GreenLight),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isExpired) Icons.Default.Warning else Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = if (isExpired) RedError else GreenSuccess,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(20.dp))
+                        Text(
+                            text = if (isExpired) "Tiket Hangus" else "Kunjungan Selesai",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp,
+                            color = TextPrimary
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            text = if (isExpired)
+                                "Tiket kamu sudah hangus karena klinik sudah tutup, silakan ambil tiket baru sesuai jadwal pelayanan."
+                            else
+                                "Kunjungan Anda telah selesai. Terima kasih telah menggunakan layanan Qlinic.",
+                            fontSize = 14.sp,
+                            color = TextSecondary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        Spacer(Modifier.height(28.dp))
+                        Button(
+                            onClick = {
+                                viewModel.resetTicketEndState()
+                                onNavigateToHistory()
+                            },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isExpired) RedError else BluePrimary
+                            )
+                        ) {
+                            Icon(Icons.Default.History, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Lihat Riwayat", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
+                    }
+                }
+                return@LazyColumn // don't render ticket below
+            }
+
+            // ── Active ticket view ────────────────────────────────────────────
 
             // Ticket number card
             item {
@@ -200,8 +303,20 @@ fun MonitoringScreen(
                 }
             }
 
-            // Cancel button
+            // Action buttons
             item {
+                Spacer(Modifier.height(24.dp))
+                Button(
+                    onClick = { viewModel.completeTicket() },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Selesai", fontWeight = FontWeight.Bold)
+                }
+
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = { showCancelDialog = true },
