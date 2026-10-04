@@ -347,6 +347,9 @@ fun ConfirmationCard(
     patient: Patient,
     onConfirm: () -> Unit
 ) {
+    val prefix = if (clinic.queueCode.isNotEmpty()) clinic.queueCode else "U"
+    val estimatedTicketNumber = "$prefix-${String.format("%03d", clinic.totalQueue + 1)}"
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -392,7 +395,7 @@ fun ConfirmationCard(
                     Text("Estimasi Nomor Antrean Anda", color = White.copy(alpha = 0.8f), fontSize = 12.sp)
                     Text("Siap langsung didaftarkan", color = White.copy(alpha = 0.6f), fontSize = 10.sp)
                     Spacer(Modifier.height(8.dp))
-                    Text("U–040", color = White, fontSize = 48.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
+                    Text(estimatedTicketNumber, color = White, fontSize = 48.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
                 }
             }
 
@@ -402,9 +405,9 @@ fun ConfirmationCard(
             ConfirmDetailRow("Nama Pasien", patient.name)
             ConfirmDetailRow("Nomor HP", patient.phone)
             ConfirmDetailRow("Poli Tujuan", clinic.name, valueColor = BluePrimary)
-            ConfirmDetailRow("Dokter Praktik", "${clinic.doctor.name.split(" ").take(2).joinToString(" ")} (Umum)")
+            ConfirmDetailRow("Dokter Praktik", "${clinic.doctor.name.split(" ").take(2).joinToString(" ")} (${if (clinic.queueCode == "G") "Gigi" else "Umum"})")
             ConfirmDetailRow("Tanggal Kunjungan", "Hari Ini (Senin, 24 Mei)")
-            ConfirmDetailRow("Jam Operasional", "08.00 - 14.00 WIB")
+            ConfirmDetailRow("Jam Operasional", clinic.schedule.ifEmpty { "08.00 - 14.00 WIB" })
 
             Spacer(Modifier.height(12.dp))
 
@@ -436,7 +439,7 @@ fun ConfirmationCard(
             ) {
                 Icon(Icons.Default.ConfirmationNumber, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Konfirmasi & Ambil Tiket U-040", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Konfirmasi & Ambil Tiket $estimatedTicketNumber", fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
 
             Spacer(Modifier.height(8.dp))
