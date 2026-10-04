@@ -78,6 +78,7 @@ fun RegistrationScreen(
     onNavigateToProfile: () -> Unit = {}
 ) {
     val selectedId by viewModel.selectedClinicId.collectAsState()
+    val profileName by viewModel.profileName.collectAsState()
     var showConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -139,7 +140,7 @@ fun RegistrationScreen(
                             letterSpacing = 1.sp
                         )
                         Text(
-                            "Halo, ${viewModel.patient.name}",
+                            "Halo, ${profileName.ifEmpty { "Pengguna" }}",
                             color = White,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold

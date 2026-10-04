@@ -26,12 +26,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.qlinic.app.ui.screens.HistoryScreen
 import com.qlinic.app.ui.screens.HomeScreen
+import com.qlinic.app.ui.screens.LoginScreen
 import com.qlinic.app.ui.screens.MonitoringScreen
 import com.qlinic.app.ui.screens.ProfileScreen
 import com.qlinic.app.ui.screens.RegistrationScreen
+import com.qlinic.app.ui.screens.SignUpScreen
 import com.qlinic.app.ui.theme.BluePrimary
+import com.qlinic.app.viewmodel.AuthViewModel
 import com.qlinic.app.viewmodel.QueueViewModel
 
 sealed class BottomNavRoute(val route: String, val label: String, val icon: ImageVector) {
@@ -48,8 +52,70 @@ val bottomNavItems = listOf(
     BottomNavRoute.Profile
 )
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Top-level nav host: handles auth check + auth flow + main app
+// ═══════════════════════════════════════════════════════════════════════════════
+
 @Composable
 fun QlinicNavHost() {
+    val authViewModel: AuthViewModel = viewModel()
+    val topNavController = rememberNavController()
+
+    // Splash/auto-login: check Firebase Auth session synchronously at startup
+    val startDestination = if (FirebaseAuth.getInstance().currentUser != null) "main" else "login"
+
+    NavHost(navController = topNavController, startDestination = startDestination) {
+
+        // ── Login ──────────────────────────────────────────────────────────────
+        composable("login") {
+            LoginScreen(
+                viewModel = authViewModel,
+                onLoginSuccess = {
+                    topNavController.navigate("main") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onNavigateToRegister = {
+                    topNavController.navigate("register")
+                }
+            )
+        }
+
+        // ── Register ───────────────────────────────────────────────────────────
+        composable("register") {
+            SignUpScreen(
+                viewModel = authViewModel,
+                onRegisterSuccess = {
+                    topNavController.navigate("main") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    topNavController.popBackStack()
+                }
+            )
+        }
+
+        // ── Main App ───────────────────────────────────────────────────────────
+        composable("main") {
+            MainAppScreen(
+                onLogout = {
+                    FirebaseAuth.getInstance().signOut()
+                    topNavController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            )
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Main app: bottom-nav scaffold (unchanged structure, plus onLogout threading)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+@Composable
+fun MainAppScreen(onLogout: () -> Unit) {
     val navController = rememberNavController()
     val viewModel: QueueViewModel = viewModel()
 
@@ -112,7 +178,7 @@ fun QlinicNavHost() {
                 )
             }
             composable(BottomNavRoute.Queue.route) {
-                // Queue sub-flow: registration -> ticket detail
+                // Queue sub-flow: registration → monitoring
                 when (queueRoute) {
                     "registration" -> RegistrationScreen(
                         viewModel = viewModel,
@@ -132,7 +198,9 @@ fun QlinicNavHost() {
                 }
             }
             composable(BottomNavRoute.History.route) { HistoryScreen() }
-            composable(BottomNavRoute.Profile.route) { ProfileScreen(viewModel = viewModel) }
+            composable(BottomNavRoute.Profile.route) {
+                ProfileScreen(viewModel = viewModel, onLogout = onLogout)
+            }
         }
     }
 }
