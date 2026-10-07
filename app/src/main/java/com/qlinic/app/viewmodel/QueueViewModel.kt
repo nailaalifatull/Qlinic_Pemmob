@@ -32,7 +32,13 @@ class QueueViewModel : ViewModel() {
     val clinicList: List<ClinicItem>
         get() = QueueRepository.clinicList
 
-    val patient: Patient = QueueRepository.currentPatient
+    val patient: Patient
+        get() = Patient(
+            name = _profileName.value.ifEmpty { auth.currentUser?.displayName ?: "Pengguna" },
+            phone = _profilePhone.value.ifEmpty { "—" },
+            nik = "3201**********",
+            bpjsVerified = true
+        )
 
     // ── Active ticket ─────────────────────────────────────────────────────────
     val ticket: StateFlow<QueueTicket> = QueueRepository.ticket

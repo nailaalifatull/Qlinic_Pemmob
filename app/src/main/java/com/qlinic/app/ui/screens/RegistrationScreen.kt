@@ -73,6 +73,9 @@ import com.qlinic.app.ui.theme.TextSecondary
 import com.qlinic.app.ui.theme.White
 import com.qlinic.app.ui.theme.YellowAccent
 import com.qlinic.app.viewmodel.QueueViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun RegistrationScreen(
@@ -82,6 +85,7 @@ fun RegistrationScreen(
 ) {
     val selectedId by viewModel.selectedClinicId.collectAsState()
     val profileName by viewModel.profileName.collectAsState()
+    val profilePhone by viewModel.profilePhone.collectAsState()
     val clinics by viewModel.clinics.collectAsState()
     var showConfirmation by remember { mutableStateOf(false) }
 
@@ -206,7 +210,10 @@ fun RegistrationScreen(
                     if (clinic != null) {
                         ConfirmationCard(
                             clinic = clinic,
-                            patient = viewModel.patient,
+                            patient = Patient(
+                                name = profileName.ifEmpty { "Pengguna" },
+                                phone = profilePhone.ifEmpty { "—" }
+                            ),
                             onConfirm = {
                                 viewModel.confirmRegistration()
                                 onConfirmed()
@@ -443,12 +450,16 @@ fun ConfirmationCard(
 
             Spacer(Modifier.height(16.dp))
 
+            val todayFormatted = remember {
+                SimpleDateFormat("EEEE, d MMMM", Locale("id", "ID")).format(Date())
+            }
+
             // Detail rows
             ConfirmDetailRow("Nama Pasien", patient.name)
             ConfirmDetailRow("Nomor HP", patient.phone)
             ConfirmDetailRow("Poli Tujuan", clinic.name, valueColor = BluePrimary)
             ConfirmDetailRow("Dokter Praktik", "${clinic.doctor.name.split(" ").take(2).joinToString(" ")} (${if (clinic.queueCode == "G") "Gigi" else "Umum"})")
-            ConfirmDetailRow("Tanggal Kunjungan", "Hari Ini (Senin, 24 Mei)")
+            ConfirmDetailRow("Tanggal Kunjungan", "Hari Ini ($todayFormatted)")
             ConfirmDetailRow("Jam Operasional", clinic.schedule.ifEmpty { "08.00 - 14.00 WIB" })
 
             Spacer(Modifier.height(12.dp))

@@ -76,8 +76,9 @@ object QueueRepository {
         get() = _clinics.value
 
     val currentPatient = Patient(
-        name = "Iqbal Ramadhan",
+        name = "Pengguna",
         nik = "3201**********",
+        phone = "—",
         bpjsVerified = true
     )
 
